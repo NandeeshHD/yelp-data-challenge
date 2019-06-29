@@ -78,10 +78,6 @@ if __name__ == '__main__':
         ('spark.task.maxFailures', '10'),
         ('spark.locality.wait', '20s'),
         ('spark.serializer', 'org.apache.spark.serializer.KryoSerializer'),
-        ("spark.driver.maxResultSize", "8g"),
-        ("spark.driver.memory", "4g"),
-        ("spark.executor.memory", "4g"),
-        ("spark.hadoop.validateOutputSpecs", "false"),
     ))
     
     sc_ = SparkContext(

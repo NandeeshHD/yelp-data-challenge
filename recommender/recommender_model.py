@@ -20,9 +20,9 @@ class RecommenderModel(object):
     logger = None
     
     # hyper-parameters
-    rank = [15]
-    maxIter = [5]
-    regParam = [0.01]
+    rank = [10, 12, 15]
+    maxIter = [10, 15]
+    regParam = [0.01, 0.1]
 
     def parse_arguments(self):
         '''Returns the parsed arguments from the command line.'''
@@ -78,10 +78,6 @@ class RecommenderModel(object):
             ('spark.task.maxFailures', '10'),
             ('spark.locality.wait', '20s'),
             ('spark.serializer', 'org.apache.spark.serializer.KryoSerializer'),
-#             ("spark.driver.maxResultSize", "8g"),
-#             ("spark.driver.memory", "4g"),
-#             ("spark.executor.memory", "4g"),
-#             ("spark.hadoop.validateOutputSpecs", "false"),
         ))
         
         sc = SparkContext(
@@ -94,15 +90,15 @@ class RecommenderModel(object):
         dataset = sqlc.read.parquet(self.args.dataset_path)
         training, test = dataset.randomSplit([0.8, 0.2], seed=self.args.seed)
         model = self.train_validate(training)
-        self.test(test)
         self.save_model(model)
+        self.test(test)
         sc.stop()
 
     def train_validate(self, dataset):
         '''Build the recommendation model using ALS on the training data
         Set cold start strategy to 'drop' to ensure not to get NaN evaluation metrics.
         :param dataset: input dataset
-        :return: bestModel trained by cross validator
+        :return: model: trained by cross validator
         '''
         als = ALS(userCol='user_id_numeric', itemCol='business_id_numeric', ratingCol='stars',
                   coldStartStrategy="drop")
@@ -126,18 +122,15 @@ class RecommenderModel(object):
 
         # Run CrossValidator, and choose the best set of parameters.
         model = cross_validator.fit(dataset)
-        bestModel = model.bestModel
-        rank = bestModel.getRank()
-        maxIter = bestModel.getMaxIter()
-        regParam = bestModel.getRegParam()
-        self.logger.info('Best model params:: Rank: {}, Max_iter: {}, Reg_param: {}'.format(
-            rank, maxIter, regParam))
-        return bestModel
+        model = model.bestModel
+
+        self.logger.info('Best model rank: {}'.format(model.rank))
+        return model
 
     def save_model(self, model):
         '''Saves the trained model.
         :param model: the trained model to save'''
-        model.bestModel.write().overwrite().save(self.args.model_storage_path)
+        model.write().overwrite().save(self.args.model_storage_path)
         self.logger.info('Model saved at - {}'.format(self.args.model_storage_path))
 
     def test(self, test):
