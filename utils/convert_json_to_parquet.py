@@ -59,7 +59,7 @@ class JsonToParquet(object):
 
     def init_logging(self, level=None):
         '''Initializes the logger
-        :param level optional string setting logging level.
+        :param level: optional string setting logging level.
         '''
         if level is None:
             level = self.log_level
@@ -68,7 +68,11 @@ class JsonToParquet(object):
         logging.basicConfig(level=level, format=LOGGING_FORMAT)
 
     def get_logger(self, spark_context=None):
-        '''Get logger from SparkContext or (if None) from logging module'''
+        '''Get logger from SparkContext or (if None) from logging module.
+        :param spark_context: optional spark context object. If passed will return
+        logger from that context.
+        :return: logger object
+        '''
         if spark_context is None:
             return logging.getLogger(self.name)
         return spark_context._jvm.org.apache.log4j.LogManager \
@@ -98,6 +102,10 @@ class JsonToParquet(object):
         sc.stop()
 
     def run_job(self, sc, sqlc):
+        '''Read the json file and converts it to parquet format.
+        :param sc: spark context object
+        :param sqlc: sql context object
+        '''
         input_rdd = sc.textFile(self.args.input,
                                 minPartitions=self.args.num_input_partitions)
 
