@@ -32,12 +32,28 @@ def init_spark_context():
     return _sc, _sqlc
 
 
+def get_recommendations(user_businesses):
+    recomendations = []
+    for _user in user_businesses:
+        _businesses = _user[1]
+        for _business in _businesses:
+            recomendations.append(business.filter(
+                business.business_id_numeric == _business[0]) \
+                .select(['name', 'stars', 'review_count']) \
+                .orderBy(['stars', 'review_count'], ascending=[0, 0]) \
+                .collect()
+            )
+    recomendations = [{'name': i[0][0], 'stars': i[0][1], 'review_count': i[0][2]} for i in recomendations]
+    return recomendations
+
+
 @main.route('/<user_id>/recommend/top/<int:count>', methods=['GET'])
 def top_recommendations(user_id, count):
     logger.info('User %s top recommendations requested', user_id)
-    user_id = user.filter(user.user_id == user_id)
-    result = model.recommendForUserSubset(user_id, count).collect()
-    return json.dumps(result.collect())
+    user_id_df = dataset.filter(dataset.user_id == user_id).select(['user_id_numeric'])
+    result = model.recommendForUserSubset(user_id_df, count).collect()
+    result = get_recommendations(result)
+    return json.dumps(result, indent=4)
 
 
 def create_app(model_path):
@@ -75,27 +91,23 @@ if __name__ == "__main__":
                             help="Path where the model is stored.")
     arg_parser.add_argument("--business_input",
                             help="Path to businesses parquet files.")
-    arg_parser.add_argument("--user_input",
-                            help="Path to users parquet files.")
     arg_parser.add_argument("--dataset_path",
                             help="Path to dataset parquet files.")
     args = arg_parser.parse_args()
 
     # Init spark context and load libraries
     sc, sqlc = init_spark_context()
-    business = sqlc.read.parquet(args.business_input).cache()
-    user = sqlc.read.parquet(args.user_input).cache()
     # to pre-load the data
+    business = sqlc.read.parquet(args.business_input).cache()
     logger.info(business.count())
-    logger.info(user.count())
-#     dataset = sqlc.read.parquet(args.dataset_path).cache()
-#     logger.info(dataset.count())
+    dataset = sqlc.read.parquet(args.dataset_path).cache()
+    logger.info(dataset.count())
 
     app, model = create_app(args.model_storage_path)
     model.userFactors.cache()
-    model.userFactors.count()
+    logger.info(model.userFactors.count())
     model.itemFactors.cache()
-    model.itemFactors.count()
+    logger.info(model.itemFactors.count())
     
     # start web server
     run_server(app)

@@ -126,7 +126,7 @@ class JsonToParquet(object):
             windowSpec = W.orderBy(column_name)
             output = output.withColumn(column_name, F.row_number().over(windowSpec))
 
-        output.coalesce(self.args.num_output_partitions) \
+        output.repartition(self.args.num_output_partitions) \
               .write \
               .parquet(self.args.output, mode='overwrite')
 
