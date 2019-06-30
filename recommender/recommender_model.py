@@ -124,7 +124,11 @@ class RecommenderModel(object):
         model = cross_validator.fit(dataset)
         model = model.bestModel
 
-        self.logger.info('Best model rank: {}'.format(model.rank))
+        rank = model._java_obj.parent().getRank()
+        maxIter = model._java_obj.parent().getMaxIter()
+        regParam = model._java_obj.parent().getRegParam()
+        self.logger.info('Best model params:: rank: {}, maxIter: {}, regParam: {}'.format(
+            rank, maxIter, regParam))
         return model
 
     def save_model(self, model):
