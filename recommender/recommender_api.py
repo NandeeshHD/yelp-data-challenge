@@ -32,28 +32,42 @@ def init_spark_context():
     return _sc, _sqlc
 
 
-def get_recommendations(user_businesses):
+def get_recommendations(user_businesses, state=None):
     recomendations = []
     for _user in user_businesses:
         _businesses = _user[1]
         for _business in _businesses:
             recomendations.append(business.filter(
                 business.business_id_numeric == _business[0]) \
-                .select(['name', 'stars', 'review_count']) \
+                .select(['name', 'stars', 'review_count', 'address', 'city', 'state']) \
                 .orderBy(['stars', 'review_count'], ascending=[0, 0]) \
                 .collect()
             )
-    recomendations = [{'name': i[0][0], 'stars': i[0][1], 'review_count': i[0][2]} for i in recomendations]
+
+    if state:
+        recomendations = [{'name': i[0][0], 'stars': i[0][1],
+                           'review_count': i[0][2], 'address': i[0][3],
+                           'city': i[0][4], 'state': i[0][5]} for i in recomendations if i[0][5] == state]
+    else:
+        recomendations = [{'name': i[0][0], 'stars': i[0][1],
+                           'review_count': i[0][2], 'address': i[0][3],
+                           'city': i[0][4], 'state': i[0][5]} for i in recomendations]
+    print(recomendations)
     return recomendations
 
 
 @main.route('/<user_id>/recommend/top/<int:count>', methods=['GET'])
 def top_recommendations(user_id, count):
     logger.info('User %s top recommendations requested', user_id)
+    state = request.args.get('state')
     user_id_df = dataset.filter(dataset.user_id == user_id).select(['user_id_numeric'])
     result = model.recommendForUserSubset(user_id_df, count).collect()
-    result = get_recommendations(result)
-    return json.dumps(result, indent=4)
+    recomendations = get_recommendations(result, state)
+    if not result:
+        result = model.recommendForUserSubset(user_id_df, 10000).collect()
+        recomendations = get_recommendations(result, state)
+
+    return json.dumps(recomendations[:count], indent=4)
 
 
 def create_app(model_path):
@@ -86,7 +100,8 @@ def run_server(_app):
 
 
 if __name__ == "__main__":
-    arg_parser = argparse.ArgumentParser()
+    description = 'Recommender API'
+    arg_parser = argparse.ArgumentParser(description=description)
     arg_parser.add_argument("--model_storage_path",
                             help="Path where the model is stored.")
     arg_parser.add_argument("--business_input",
