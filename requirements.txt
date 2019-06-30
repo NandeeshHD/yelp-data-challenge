@@ -1,0 +1,4 @@
+CherryPy==18.1.2
+Flask==1.0.3
+Paste==3.0.8
+plotly==3.10.0
