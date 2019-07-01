@@ -16,10 +16,16 @@ To get the docker image, the following `pull` command can be used.
     docker pull nandee/jupyter-pyspark
 
 ## Note: - Hardware requirement to run the Spark jobs in the container
-Some jobs in the container need around 16Gb of RAM. So minimum requirement is to allocate more than 16Gb of RAM.
+Since the Spark jobs are run locally, some jobs in the container need around 16Gb of RAM. So minimum requirement is to allocate more than 16Gb of RAM.
 If possible allocate more than 4 CPUs.
 
 To make these changes follow the instruction in this [Stack Overflow](https://stackoverflow.com/a/44533437/3323084) answer.
+
+OR
+
+If you have a `YARN` cluster or any other appropriate cluster available to run the jobs, then provide it to the `spark-submit` using `--master <master-url>`.
+And specify `--deploy-mode <deploy-mode>` depending on whether to deploy your driver on the worker nodes (`cluster`) or locally as an external client (`client`).
+
 
 ## Running the Image
 
