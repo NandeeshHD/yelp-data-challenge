@@ -13,7 +13,7 @@ The docker images can be found in the [Nandeesh's repository](https://hub.docker
 
 To get the docker image, the following `pull` command can be used.
 
-    docker pull minerkasch/jupyter-pyspark
+    docker pull nandee/jupyter-pyspark
 
 ## PS - Hardware requirement to run the Spark jobs in the container
 Some jobs in the container need around 16Gb of RAM. So minimum requirement is to allocate more than 16Gb of RAM.
@@ -26,10 +26,10 @@ To make these changes follow the instruction in this [Stack Overflow](https://st
 ### To run in detached mode
 
 	docker run -it --rm -d -p 8888:8888 -p 9001:9001 -p 4040-4042:4040-4042 \
-						   -e GRANT_SUDO="yes" \
-						   --user root \
-						   --name jupyter \
-						   nandee/yelp-data-challenge
+	                       -e GRANT_SUDO="yes" \
+	                       --user root \
+	                       --name jupyter \
+	                       nandee/yelp-data-challenge
 
 Enter the following command to get the URL to access the notebook.
 
@@ -39,10 +39,10 @@ Enter the following command to get the URL to access the notebook.
 ### Or simply run the following command and copy-paste the URL shown in terminal into browser to access notebook
 
 	docker run -it --rm -p 8888:8888 -p 9001:9001 -p 4040-4042:4040-4042 \
-						-e GRANT_SUDO="yes" \
-						--user root \
-						--name jupyter \
-						nandee/yelp-data-challenge
+	                    -e GRANT_SUDO="yes" \
+	                    --user root \
+	                    --name jupyter \
+	                    nandee/yelp-data-challenge
 
 ## Download data, extract and convert JSON to Parquet files for storage
 
