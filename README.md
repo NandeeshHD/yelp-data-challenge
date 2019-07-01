@@ -31,11 +31,11 @@ And specify `--deploy-mode <deploy-mode>` depending on whether to deploy your dr
 
 ### To run in detached mode
 
-	docker run -it --rm -d -p 8888:8888 -p 9001:9001 -p 4040-4042:4040-4042 \
-	                       -e GRANT_SUDO="yes" \
-	                       --user root \
-	                       --name jupyter \
-	                       nandee/yelp-data-challenge
+	docker run --rm -d -p 8888:8888 -p 9001:9001 -p 4040-4042:4040-4042 \
+	                   -e GRANT_SUDO="yes" \
+	                   --user root \
+	                   --name jupyter \
+	                   nandee/yelp-data-challenge
 
 Enter the following command to get the URL to access the notebook.
 
