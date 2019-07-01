@@ -64,7 +64,7 @@ def top_recommendations(user_id, count):
     result = model.recommendForUserSubset(user_id_df, count).collect()
     recomendations = get_recommendations(result, state)
     if not result:
-        result = model.recommendForUserSubset(user_id_df, 10000).collect()
+        result = model.recommendForUserSubset(user_id_df, 50000).collect()
         recomendations = get_recommendations(result, state)
 
     return json.dumps(recomendations[:count], indent=4)
