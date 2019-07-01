@@ -88,7 +88,7 @@ class RecommenderModel(object):
         self.logger = self.get_logger(sc)
 
         dataset = sqlc.read.parquet(self.args.dataset_path)
-        training, test = dataset.randomSplit([0.8, 0.2], seed=self.args.seed)
+        training, test = dataset.randomSplit([0.9, 0.1], seed=self.args.seed)
         model = self.train_validate(training)
         self.save_model(model)
         self.test(test)
